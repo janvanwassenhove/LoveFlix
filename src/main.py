@@ -7,14 +7,28 @@ import re
 
 def main():
     original_title = input("Please enter the movie title: ")
+    
+    print("Please select the language:")
+    print("1. English")
+    print("2. Dutch")
+    print("3. French")
+    language_choice = input("Enter the number corresponding to your choice: ").strip()
+
+    language_map = {
+        "1": "English",
+        "2": "Dutch",
+        "3": "French"
+    }
+
+    language = language_map.get(language_choice, "English").lower()
 
     openai_client = OpenAIClient()
     movie_data = openai_client.get_movie_data(original_title)
     original_summary = movie_data.get('summary', "Summary not found.")
 
     movie_processor = MovieProcessor()
-    romantic_title = movie_processor.create_romantic_title(original_title)
-    romantic_summary = movie_processor.create_romantic_summary(original_summary)
+    romantic_title = movie_processor.create_romantic_title(original_title, language)
+    romantic_summary = movie_processor.create_romantic_summary(original_summary, language)
 
     print(f"Romanticized Title: {romantic_title}")
     print(f"Romanticized Summary: {romantic_summary}")
@@ -32,7 +46,7 @@ def main():
     save_image(image_data, image_path)
 
     # Save the romanticized title, summary, and image in a README file in the new directory
-    with open(os.path.join(movies_directory, "README.md"), "w") as readme_file:
+    with open(os.path.join(movies_directory, "README.md"), "w", encoding="utf-8") as readme_file:
         readme_file.write(f"![Movie Poster]({directory_name}_poster.png)\n")
         readme_file.write(f"# {romantic_title} (Originally -{original_title}-)\n")
         readme_file.write(f"## Summary:\n{romantic_summary}\n")
