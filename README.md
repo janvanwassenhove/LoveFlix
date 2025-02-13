@@ -28,7 +28,7 @@ To get started with Loveflix, follow these steps:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/janvanwassenhove/Loveflix.git
+   git clone https://github.com/janvanwassenhove/LoveFlix.git
    cd Loveflix
    ```
 
