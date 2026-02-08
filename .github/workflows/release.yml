@@ -1,0 +1,113 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: electron-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: electron-app
+        run: npm ci
+
+      - name: Build for ${{ matrix.platform }}
+        working-directory: electron-app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:${{ matrix.platform }}
+
+      - name: Upload Windows artifacts
+        if: matrix.platform == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: |
+            electron-app/dist/*.exe
+            electron-app/dist/*.exe.blockmap
+            electron-app/dist/latest.yml
+
+      - name: Upload macOS artifacts
+        if: matrix.platform == 'mac'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: |
+            electron-app/dist/*.dmg
+            electron-app/dist/*.dmg.blockmap
+            electron-app/dist/latest-mac.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | head -20
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: LoveFlix Desktop ${{ steps.version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/windows-installer/*
+            artifacts/macos-installer/*
+          body: |
+            ## 🎬 LoveFlix Desktop ${{ steps.version.outputs.VERSION }}
+
+            Transform any movie into a hyper-romantic masterpiece with AI!
+
+            ### 📥 Downloads
+
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | 🪟 Windows | `LoveFlix Setup ${{ steps.version.outputs.VERSION }}.exe` | NSIS installer with auto-update |
+            | 🍎 macOS (Intel) | `LoveFlix-${{ steps.version.outputs.VERSION }}.dmg` | For Intel Macs |
+            | 🍎 macOS (Apple Silicon) | `LoveFlix-${{ steps.version.outputs.VERSION }}-arm64.dmg` | For M1/M2/M3/M4 Macs |
+
+            ### 🔄 Auto-Update
+            Existing installations will be notified automatically. All user data (API keys, collections, settings) is preserved.
+
+            ### 🚀 First-time Setup
+            1. Download and install for your platform
+            2. Open Settings (⚙️) and enter your OpenAI API key
+            3. *(Optional)* Enter your TMDB API key for the Top 10 feature
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

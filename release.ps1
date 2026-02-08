@@ -10,9 +10,6 @@ param(
     [switch]$SkipPush,
     
     [Parameter(Mandatory=$false)]
-    [switch]$CreateGitHubRelease,
-    
-    [Parameter(Mandatory=$false)]
     [switch]$Help
 )
 
@@ -21,25 +18,26 @@ if ($Help) {
 LoveFlix Release Builder
 
 Usage:
-    .\release.ps1 [-Version <version>] [-SkipTests] [-SkipPush] [-CreateGitHubRelease] [-Help]
+    .\release.ps1 [-Version <version>] [-SkipTests] [-SkipPush] [-Help]
 
 Parameters:
     -Version <version>     : Specify the version (e.g., 1.0.0, 1.1.0)
     -SkipTests            : Skip npm test (faster but less safe)
     -SkipPush             : Don't push to remote repository
-    -CreateGitHubRelease  : Automatically create GitHub release with installers
     -Help                 : Show this help message
 
 Examples:
     .\release.ps1
     .\release.ps1 -Version "1.1.0"
-    .\release.ps1 -Version "2.0.0" -CreateGitHubRelease
-    .\release.ps1 -CreateGitHubRelease
+    .\release.ps1 -Version "2.0.0" -SkipPush
 
-Note: Builds for current platform only (Windows on Windows, macOS on macOS).
-      For multi-platform releases, use GitHub Actions or build on each platform.
-      Auto-update is enabled - new versions will update existing installations
-      without losing user data (API keys, saved collections, settings).
+What happens:
+    1. Builds locally for your current platform (verifies the build works)
+    2. Creates a git tag (v<version>)
+    3. Pushes tag to GitHub
+    4. GitHub Actions automatically builds BOTH Windows + macOS installers
+    5. A GitHub Release is created with all installers attached
+    6. Existing users get auto-update notifications
 "@
     exit 0
 }
@@ -295,9 +293,7 @@ try {
     Write-Host "Build artifacts are located in:" -ForegroundColor Yellow
     Write-Host "- electron-app\dist\" -ForegroundColor White
     Write-Host ""
-    Write-Host "Installers created:" -ForegroundColor Yellow
-    
-    # List actual files created based on platform
+    Write-Host "Local installer created:" -ForegroundColor Yellow
     if ($isWindows) {
         Write-Host "  🪟 Windows: LoveFlix Setup $Version.exe" -ForegroundColor Cyan
     } elseif ($isMacOS) {
@@ -311,141 +307,24 @@ try {
     Write-Host "✅ Auto-update enabled: Users will be notified of new versions" -ForegroundColor Green
     Write-Host "   User data (API keys, collections, settings) is preserved" -ForegroundColor Green
     Write-Host ""
-    Write-Host "💡 Multi-platform tip:" -ForegroundColor Yellow
-    Write-Host "   Build on each platform separately or use GitHub Actions" -ForegroundColor Yellow
-    Write-Host ""
     if (-not $SkipPush -and ($pushChoice -eq "y" -or $pushChoice -eq "Y")) {
-        if ($CreateGitHubRelease) {
-            Write-Host "Creating GitHub release..." -ForegroundColor Blue
-            
-            # Check if GitHub CLI is available
-            if (Get-Command "gh" -ErrorAction SilentlyContinue) {
-                try {
-                    # Check authentication
-                    $AuthStatus = gh auth status 2>&1
-                    if ($LASTEXITCODE -eq 0) {
-                        # Generate release notes
-                        $ReleaseNotes = @"
-# LoveFlix Desktop $Version
-
-## 🎬 What's New
-Transform any movie into a hyper-romantic masterpiece with AI-powered Netflix-style UI!
-
-## ✨ Features
-- 🤖 AI-powered movie transformation (OpenAI integration)
-- 🎨 AI-generated romantic movie posters (DALL-E / GPT Image)
-- 🌍 Multi-language support
-- 📊 Top 10 movies by country (TMDB integration)
-- 💾 Save and manage your romantic movie collection
-- 🎭 Multiple AI models for text and images
-
-## 📥 Downloads
-
-### Windows Installer
-- **Setup**: ``LoveFlix Setup $Version.exe`` - Windows installer with auto-update support
-
-### macOS Installer
-- **DMG (Intel)**: ``LoveFlix-$Version.dmg`` - macOS installer for Intel Macs
-- **DMG (Apple Silicon)**: ``LoveFlix-$Version-arm64.dmg`` - macOS installer for M1/M2/M3 Macs
-
-## 🔄 Auto-Update
-This version includes automatic update support. When a new version is released:
-- You'll be notified in the app
-- One-click update installation
-- All your data is preserved (API keys, saved collections, settings)
-
-## 💻 System Requirements
-
-### Windows
-- Windows 10/11 (64-bit)
-- 4GB RAM minimum
-
-### macOS
-- macOS 10.15 (Catalina) or later
-- 4GB RAM minimum
-- Intel or Apple Silicon
-
-## 🚀 Installation
-
-### Windows
-1. Download ``LoveFlix Setup $Version.exe``
-2. Run the installer
-3. Follow the setup wizard
-4. Launch LoveFlix from Start Menu or Desktop
-
-### macOS
-1. Download the appropriate DMG for your Mac
-2. Open the DMG file
-3. Drag LoveFlix to Applications folder
-4. Launch from Applications
-
-## 🔑 Setup
-1. Launch LoveFlix
-2. Go to Settings (gear icon)
-3. Enter your OpenAI API key
-4. (Optional) Enter your TMDB API key for Top 10 feature
-
-## 🐛 Issues & Support
-If you encounter any issues, please report them on our [GitHub Issues](https://github.com/janvanwassenhove/LoveFlix/issues) page.
-
----
-Generated on $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
-"@
-
-                        # Find installer paths
-                        $DistPath = "electron-app\dist"
-                        $WindowsInstaller = Get-ChildItem -Path $DistPath -Filter "LoveFlix Setup*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-                        $MacDmgIntel = Get-ChildItem -Path $DistPath -Filter "LoveFlix-*-x64.dmg" -ErrorAction SilentlyContinue | Select-Object -First 1
-                        $MacDmgArm = Get-ChildItem -Path $DistPath -Filter "LoveFlix-*-arm64.dmg" -ErrorAction SilentlyContinue | Select-Object -First 1
-                        
-                        # Create GitHub release
-                        $GhArgs = @("release", "create", "v$Version", "--title", "LoveFlix Desktop $Version", "--notes", $ReleaseNotes)
-                        
-                        # Add installers if they exist
-                        if ($WindowsInstaller) { 
-                            $GhArgs += $WindowsInstaller.FullName
-                            Write-Host "  ✅ Windows installer: $($WindowsInstaller.Name)" -ForegroundColor Green
-                        }
-                        if ($MacDmgIntel) { 
-                            $GhArgs += $MacDmgIntel.FullName 
-                            Write-Host "  ✅ macOS Intel installer: $($MacDmgIntel.Name)" -ForegroundColor Green
-                        }
-                        if ($MacDmgArm) { 
-                            $GhArgs += $MacDmgArm.FullName 
-                            Write-Host "  ✅ macOS ARM installer: $($MacDmgArm.Name)" -ForegroundColor Green
-                        }
-                        
-                        & gh @GhArgs
-                        
-                        if ($LASTEXITCODE -eq 0) {
-                            Write-Host ""
-                            Write-Host "✅ GitHub release created successfully!" -ForegroundColor Green
-                            Write-Host "🌐 View at: https://github.com/janvanwassenhove/LoveFlix/releases/tag/v$Version" -ForegroundColor Cyan
-                        } else {
-                            Write-Host "❌ Failed to create GitHub release. You can create it manually." -ForegroundColor Yellow
-                            Write-Host "https://github.com/janvanwassenhove/LoveFlix/releases/new?tag=v$Version" -ForegroundColor Cyan
-                        }
-                    } else {
-                        Write-Host "❌ Not authenticated with GitHub CLI. Run: gh auth login" -ForegroundColor Yellow
-                        Write-Host "You can create the release manually at:" -ForegroundColor Yellow
-                        Write-Host "https://github.com/janvanwassenhove/LoveFlix/releases/new?tag=v$Version" -ForegroundColor Cyan
-                    }
-                } catch {
-                    Write-Host "❌ Error creating GitHub release: $($_.Exception.Message)" -ForegroundColor Yellow
-                    Write-Host "You can create it manually at:" -ForegroundColor Yellow
-                    Write-Host "https://github.com/janvanwassenhove/LoveFlix/releases/new?tag=v$Version" -ForegroundColor Cyan
-                }
-            } else {
-                Write-Host "❌ GitHub CLI not found. Install with: winget install --id GitHub.cli" -ForegroundColor Yellow
-                Write-Host "You can create the release manually at:" -ForegroundColor Yellow
-                Write-Host "https://github.com/janvanwassenhove/LoveFlix/releases/new?tag=v$Version" -ForegroundColor Cyan
-            }
-        } else {
-            Write-Host "You can create a GitHub release at:" -ForegroundColor Yellow
-            Write-Host "https://github.com/janvanwassenhove/LoveFlix/releases/new?tag=v$Version" -ForegroundColor Cyan
-        }
+        Write-Host "🚀 GitHub Actions will now automatically:" -ForegroundColor Cyan
+        Write-Host "   1. Build Windows installer (.exe)" -ForegroundColor White
+        Write-Host "   2. Build macOS installers (.dmg for Intel + Apple Silicon)" -ForegroundColor White
+        Write-Host "   3. Create GitHub Release with all installers" -ForegroundColor White
         Write-Host ""
+        Write-Host "🌐 Monitor progress at:" -ForegroundColor Yellow
+        Write-Host "   https://github.com/janvanwassenhove/LoveFlix/actions" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "📦 Release will appear at:" -ForegroundColor Yellow
+        Write-Host "   https://github.com/janvanwassenhove/LoveFlix/releases/tag/v$Version" -ForegroundColor Cyan
+    } else {
+        Write-Host "💡 To trigger multi-platform builds, push the tag:" -ForegroundColor Yellow
+        Write-Host "   git push origin main" -ForegroundColor White
+        Write-Host "   git push origin v$Version" -ForegroundColor White
+        Write-Host "   GitHub Actions will build Windows + macOS installers automatically" -ForegroundColor Gray
     }
+    Write-Host ""
 
 } catch {
     Write-Host "ERROR: An unexpected error occurred: $_" -ForegroundColor Red
