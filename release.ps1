@@ -1,9 +1,6 @@
 # LoveFlix Release Builder (PowerShell version)
 param(
     [Parameter(Mandatory=$false)]
-    [string]$Version,
-    
-    [Parameter(Mandatory=$false)]
     [switch]$SkipTests,
     
     [Parameter(Mandatory=$false)]
@@ -18,26 +15,26 @@ if ($Help) {
 LoveFlix Release Builder
 
 Usage:
-    .\release.ps1 [-Version <version>] [-SkipTests] [-SkipPush] [-Help]
+    .\release.ps1 [-SkipTests] [-SkipPush] [-Help]
 
 Parameters:
-    -Version <version>     : Specify the version (e.g., 1.0.0, 1.1.0)
     -SkipTests            : Skip npm test (faster but less safe)
     -SkipPush             : Don't push to remote repository
     -Help                 : Show this help message
 
 Examples:
     .\release.ps1
-    .\release.ps1 -Version "1.1.0"
-    .\release.ps1 -Version "2.0.0" -SkipPush
+    .\release.ps1 -SkipPush
+    .\release.ps1 -SkipTests
 
 What happens:
-    1. Builds locally for your current platform (verifies the build works)
-    2. Creates a git tag (v<version>)
-    3. Pushes tag to GitHub
-    4. GitHub Actions automatically builds BOTH Windows + macOS installers
-    5. A GitHub Release is created with all installers attached
-    6. Existing users get auto-update notifications
+    1. You'll be prompted for the version number
+    2. Builds locally for your current platform (verifies the build works)
+    3. Creates a git tag (v<version>)
+    4. Pushes tag to GitHub
+    5. GitHub Actions automatically builds BOTH Windows + macOS installers
+    6. A GitHub Release is created with all installers attached
+    7. Existing users get auto-update notifications
 "@
     exit 0
 }
@@ -88,11 +85,9 @@ Write-Host "Current version: $currentVersion" -ForegroundColor Yellow
 Write-Host ""
 
 # Get new version
-if (-not $Version) {
-    do {
-        $Version = Read-Host "Enter new version (e.g., 1.0.1, 2.0.0)"
-    } while (-not $Version)
-}
+do {
+    $Version = Read-Host "Enter new version (e.g., 1.0.1, 2.0.0)"
+} while (-not $Version)
 
 # Validate version format
 if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
@@ -295,31 +290,31 @@ try {
     Write-Host ""
     Write-Host "Local installer created:" -ForegroundColor Yellow
     if ($isWindows) {
-        Write-Host "  🪟 Windows: LoveFlix Setup $Version.exe" -ForegroundColor Cyan
+        Write-Host "  [Windows] LoveFlix Setup $Version.exe" -ForegroundColor Cyan
     } elseif ($isMacOS) {
-        Write-Host "  🍎 macOS Intel: LoveFlix-$Version.dmg" -ForegroundColor Cyan
-        Write-Host "  🍎 macOS ARM: LoveFlix-$Version-arm64.dmg" -ForegroundColor Cyan
+        Write-Host "  [macOS Intel] LoveFlix-$Version.dmg" -ForegroundColor Cyan
+        Write-Host "  [macOS ARM] LoveFlix-$Version-arm64.dmg" -ForegroundColor Cyan
     }
     Write-Host ""
     Write-Host "Git tag created: v$Version" -ForegroundColor Yellow
     Write-Host "App version updated in package.json" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "✅ Auto-update enabled: Users will be notified of new versions" -ForegroundColor Green
-    Write-Host "   User data (API keys, collections, settings) is preserved" -ForegroundColor Green
+    Write-Host "[OK] Auto-update enabled: Users will be notified of new versions" -ForegroundColor Green
+    Write-Host "     User data (API keys, collections, settings) is preserved" -ForegroundColor Green
     Write-Host ""
     if (-not $SkipPush -and ($pushChoice -eq "y" -or $pushChoice -eq "Y")) {
-        Write-Host "🚀 GitHub Actions will now automatically:" -ForegroundColor Cyan
+        Write-Host ">> GitHub Actions will now automatically:" -ForegroundColor Cyan
         Write-Host "   1. Build Windows installer (.exe)" -ForegroundColor White
         Write-Host "   2. Build macOS installers (.dmg for Intel + Apple Silicon)" -ForegroundColor White
         Write-Host "   3. Create GitHub Release with all installers" -ForegroundColor White
         Write-Host ""
-        Write-Host "🌐 Monitor progress at:" -ForegroundColor Yellow
+        Write-Host ">> Monitor progress at:" -ForegroundColor Yellow
         Write-Host "   https://github.com/janvanwassenhove/LoveFlix/actions" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "📦 Release will appear at:" -ForegroundColor Yellow
+        Write-Host ">> Release will appear at:" -ForegroundColor Yellow
         Write-Host "   https://github.com/janvanwassenhove/LoveFlix/releases/tag/v$Version" -ForegroundColor Cyan
     } else {
-        Write-Host "💡 To trigger multi-platform builds, push the tag:" -ForegroundColor Yellow
+        Write-Host ">> To trigger multi-platform builds, push the tag:" -ForegroundColor Yellow
         Write-Host "   git push origin main" -ForegroundColor White
         Write-Host "   git push origin v$Version" -ForegroundColor White
         Write-Host "   GitHub Actions will build Windows + macOS installers automatically" -ForegroundColor Gray
