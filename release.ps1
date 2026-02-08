@@ -149,11 +149,49 @@ try {
     if (Test-Path "dist") { Remove-Item "dist" -Recurse -Force }
     
     # Clear electron-builder cache on Windows to avoid symlink issues
+    # Then pre-populate the winCodeSign cache manually, ignoring symlink errors
+    # (the symlinks are for macOS darwin libs which are not needed on Windows)
     if ($isWindows) {
         $cacheDir = Join-Path $env:LOCALAPPDATA "electron-builder\Cache\winCodeSign"
-        if (Test-Path $cacheDir) {
-            Write-Host "Clearing electron-builder cache to avoid symlink issues..." -ForegroundColor Yellow
-            Remove-Item $cacheDir -Recurse -Force -ErrorAction SilentlyContinue
+        $expectedDir = Join-Path $cacheDir "winCodeSign-2.6.0"
+        
+        if (-not (Test-Path $expectedDir)) {
+            Write-Host "Pre-populating winCodeSign cache (working around Windows symlink restriction)..." -ForegroundColor Yellow
+            
+            # Ensure cache directory exists
+            New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+            
+            # Download the archive
+            $archiveUrl = "https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z"
+            $archivePath = Join-Path $cacheDir "winCodeSign-2.6.0.7z"
+            
+            Write-Host "  Downloading winCodeSign-2.6.0..." -ForegroundColor Gray
+            Invoke-WebRequest -Uri $archiveUrl -OutFile $archivePath -UseBasicParsing
+            
+            # Extract using the bundled 7za.exe, ignoring exit code 2 (symlink errors are harmless)
+            $sevenZip = Join-Path (Get-Location) "node_modules\7zip-bin\win\x64\7za.exe"
+            if (-not (Test-Path $sevenZip)) {
+                # Fallback: try to find any 7za.exe
+                $sevenZip = Get-ChildItem -Path "node_modules" -Filter "7za.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+            }
+            
+            if ($sevenZip) {
+                Write-Host "  Extracting (ignoring macOS symlink warnings)..." -ForegroundColor Gray
+                & $sevenZip x -bd -y $archivePath "-o$expectedDir" 2>&1 | Out-Null
+                # Exit code 2 = "sub items errors" (symlinks) - this is fine on Windows
+                if ($LASTEXITCODE -le 2) {
+                    Write-Host "  ✅ winCodeSign cache ready" -ForegroundColor Green
+                } else {
+                    Write-Host "  ⚠ Extraction had issues (exit code: $LASTEXITCODE), build may still work" -ForegroundColor Yellow
+                }
+            } else {
+                Write-Host "  ⚠ Could not find 7za.exe, electron-builder will download winCodeSign itself" -ForegroundColor Yellow
+            }
+            
+            # Clean up the archive
+            Remove-Item $archivePath -Force -ErrorAction SilentlyContinue
+        } else {
+            Write-Host "winCodeSign cache already exists, skipping..." -ForegroundColor Gray
         }
     }
 
