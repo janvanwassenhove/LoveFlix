@@ -36,7 +36,8 @@ Examples:
     .\release.ps1 -Version "2.0.0" -CreateGitHubRelease
     .\release.ps1 -CreateGitHubRelease
 
-Note: Always builds for both Windows and macOS.
+Note: Builds for current platform only (Windows on Windows, macOS on macOS).
+      For multi-platform releases, use GitHub Actions or build on each platform.
       Auto-update is enabled - new versions will update existing installations
       without losing user data (API keys, saved collections, settings).
 "@
@@ -164,19 +165,18 @@ try {
     }
 
     # Build the application
-    Write-Host "Building Electron application for all platforms (this may take a while)..." -ForegroundColor Yellow
-    Write-Host "  - Windows installer (NSIS)" -ForegroundColor Cyan
-    Write-Host "  - macOS installer (DMG) - Intel" -ForegroundColor Cyan
-    Write-Host "  - macOS installer (DMG) - Apple Silicon" -ForegroundColor Cyan
+    Write-Host "Building Electron application for current platform (this may take a while)..." -ForegroundColor Yellow
     
-    if ($env:OS -eq "Windows_NT") {
-        Write-Host ""
-        Write-Host "Note: Building for macOS from Windows. DMG files will be created." -ForegroundColor Yellow
-        Write-Host "      For signed releases, build on macOS or use CI/CD." -ForegroundColor Yellow
-        Write-Host ""
+    if ($isWindows) {
+        Write-Host "  - Windows installer (NSIS)" -ForegroundColor Cyan
+        npm run build:win
+    } elseif ($isMacOS) {
+        Write-Host "  - macOS installer (DMG) - Intel & Apple Silicon" -ForegroundColor Cyan
+        npm run build:mac
+    } else {
+        Write-Host "  - Building for current platform" -ForegroundColor Cyan
+        npm run build
     }
-    
-    npm run build:all
     
     if ($LASTEXITCODE -ne 0) {
         Pop-Location
@@ -240,18 +240,25 @@ try {
     Write-Host "Build artifacts are located in:" -ForegroundColor Yellow
     Write-Host "- electron-app\dist\" -ForegroundColor White
     Write-Host ""
-    Write-Host "Platform-specific installers:" -ForegroundColor Yellow
-    if ($Platform -eq "all" -or $Platform -eq "windows") {
+    Write-Host "Installers created:" -ForegroundColor Yellow
+    
+    # List actual files created based on platform
+    if ($isWindows) {
         Write-Host "  🪟 Windows: LoveFlix Setup $Version.exe" -ForegroundColor Cyan
-    }
-    if ($Platform -eq "all" -or $Platform -eq "macos") {
-        Write-Host "  🍎 macOS: LoveFlix-$Version.dmg, LoveFlix-$Version-arm64.dmg" -ForegroundColor Cyan
+    } elseif ($isMacOS) {
+        Write-Host "  🍎 macOS Intel: LoveFlix-$Version.dmg" -ForegroundColor Cyan
+        Write-Host "  🍎 macOS ARM: LoveFlix-$Version-arm64.dmg" -ForegroundColor Cyan
     }
     Write-Host ""
-    Write-Host "Installers created:" -ForegroundColor Yellow
-    Write-Host "  🪟 Windows: LoveFlix Setup $Version.exe" -ForegroundColor Cyan
-    Write-Host "  🍎 macOS Intel: LoveFlix-$Version.dmg" -ForegroundColor Cyan
-    Write-Host "  🍎 macOS ARM: LoveFlix-$Version-arm64.dmg" -ForegroundColor Cyan
+    Write-Host "Git tag created: v$Version" -ForegroundColor Yellow
+    Write-Host "App version updated in package.json" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "✅ Auto-update enabled: Users will be notified of new versions" -ForegroundColor Green
+    Write-Host "   User data (API keys, collections, settings) is preserved" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "💡 Multi-platform tip:" -ForegroundColor Yellow
+    Write-Host "   Build on each platform separately or use GitHub Actions" -ForegroundColor Yellow
+    Write-Host ""
     if (-not $SkipPush -and ($pushChoice -eq "y" -or $pushChoice -eq "Y")) {
         if ($CreateGitHubRelease) {
             Write-Host "Creating GitHub release..." -ForegroundColor Blue

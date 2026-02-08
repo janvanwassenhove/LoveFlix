@@ -2,7 +2,7 @@
 
 ## What Changed
 
-LoveFlix now fetches **live Top 10 data from The Movie Database (TMDB)** instead of using hardcoded lists. The Top 10 feature is now **region-specific** based on your selected country.
+LoveFlix now fetches **live Top 10 data from The Movie Database (TMDB)** to inspire you. The Top 10 feature is now **region-specific** based on your selected country.
 
 ## New Features
 

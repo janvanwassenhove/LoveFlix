@@ -168,10 +168,12 @@ Or simply run and enter version when prompted:
 ```
 
 This will:
-- Build installers for Windows and macOS (Intel + Apple Silicon)
+- Build installer for your current platform (Windows or macOS)
 - Create git tag and GitHub release
 - Upload installers automatically
 - Enable auto-update for users
+
+💡 For multi-platform releases, run on each platform or use CI/CD
 
 ## OpenAI API Integration
 

@@ -6,11 +6,12 @@
 ```powershell
 .\release.ps1 -Version "1.1.0" -CreateGitHubRelease
 ```
-✅ Builds Windows & macOS installers (Intel + ARM)  
+✅ Builds installer for current platform  
 ✅ Creates git tag and pushes  
 ✅ Creates GitHub release  
-✅ Uploads all installers  
+✅ Uploads installer  
 ✅ Enables auto-update for users  
+💡 Build on each platform for complete release  
 
 ---
 
@@ -53,7 +54,10 @@
 | `-CreateGitHubRelease` | Flag | Create GitHub release |
 | `-Help` | Flag | Show help |
 
-**Note**: Script always builds for Windows + macOS (Intel + ARM). No platform selection needed.
+**Note**: Builds for current platform only.
+- Run on **Windows** → Creates Windows installer  
+- Run on **macOS** → Creates macOS installers (Intel + ARM)  
+- **Multi-platform**: Build separately on each OS or use CI/CD
 
 ---
 

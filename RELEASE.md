@@ -33,7 +33,10 @@ The script will ask for the version number if not provided.
 .\release.ps1 -Version "1.1.0" -CreateGitHubRelease
 ```
 
-**Note**: The script always builds for both Windows and macOS (Intel + Apple Silicon).
+**Note**: The script builds for your current platform only. For multi-platform releases:
+- Build on Windows for Windows installers
+- Build on macOS for macOS installers  
+- Use GitHub Actions for automated multi-platform builds
 
 ## Release Script Parameters
 
@@ -45,7 +48,10 @@ The script will ask for the version number if not provided.
 | `-CreateGitHubRelease` | Create GitHub release automatically | Flag |
 | `-Help` | Show help message | Flag |
 
-**Note**: The script always builds for all platforms (Windows & macOS). No platform selection needed.
+**Note**: The script builds for your current platform only.
+- **Windows**: Creates `.exe` installer
+- **macOS**: Creates `.dmg` for Intel and Apple Silicon
+- **Multi-platform**: Use CI/CD or build separately on each platform
 
 ## Release Process Steps
 

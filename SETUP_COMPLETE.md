@@ -52,14 +52,15 @@ Or just run without version to be prompted:
 
 This will:
 1. Update version in package.json
-2. Build Windows installer (.exe)
-3. Build macOS installers (.dmg for Intel & ARM)
-4. Commit changes and create git tag
-5. Push to GitHub
-6. Create GitHub release
-7. Upload all installers
+2. Build installer for current platform
+   - Windows: `.exe` installer
+   - macOS: `.dmg` for Intel & ARM
+3. Commit changes and create git tag
+4. Push to GitHub
+5. Create GitHub release
+6. Upload installers
 
-**Note**: Always builds for all platforms automatically.
+**Note**: Builds for current platform only. For multi-platform releases, build on each platform separately.
 
 ### Step 3: Verify
 Check: https://github.com/janvanwassenhove/LoveFlix/releases
@@ -120,7 +121,10 @@ These directories are **outside** the app folder, so updates never touch them.
 .\release.ps1 -Version "1.1.0-beta" -SkipPush
 ```
 
-**Note**: All commands build for both Windows and macOS automatically.
+**Note**: Commands build for your current platform. For complete multi-platform release:
+- Run on Windows to create Windows installer
+- Run on macOS to create macOS installers
+- Or use GitHub Actions for automated multi-platform builds
 
 ---
 
