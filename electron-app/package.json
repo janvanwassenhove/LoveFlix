@@ -1,101 +1,103 @@
 {
-  "name": "loveflix",
-  "version": "1.0.0",
-  "description": "Transform any movie into a hyper-romantic masterpiece with Netflix-style UI",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
-    "build:win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
-    "build:mac": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
-    "build:all": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --mac"
-  },
-  "author": "LoveFlix Team",
-  "license": "MIT",
-  "devDependencies": {
-    "cross-env": "^10.1.0",
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
-  },
-  "dependencies": {
-    "axios": "^1.6.2",
-    "electron-store": "^8.1.0",
-    "electron-updater": "^6.7.3",
-    "openai": "^4.20.1"
-  },
-  "build": {
-    "appId": "com.loveflix.app",
-    "productName": "LoveFlix",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "**/*",
-      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
-      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
-      "!**/node_modules/*.d.ts",
-      "!**/node_modules/.bin"
-    ],
-    "publish": {
-      "provider": "github",
-      "owner": "janvanwassenhove",
-      "repo": "LoveFlix"
-    },
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "assets/icon.ico",
-      "publisherName": "LoveFlix Team",
-      "sign": null,
-      "signingHashAlgorithms": [],
-      "verifyUpdateCodeSignature": false,
-      "forceCodeSigning": false
-    },
-    "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "icon": "assets/icon.icns",
-      "category": "public.app-category.entertainment",
-      "hardenedRuntime": false,
-      "gatekeeperAssess": false,
-      "identity": null
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "allowElevation": true,
-      "installerIcon": "assets/icon.ico",
-      "uninstallerIcon": "assets/icon.ico",
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "LoveFlix"
-    },
-    "dmg": {
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
-    }
-  }
+    "name":  "loveflix",
+    "version":  "1.0.0",
+    "description":  "Transform any movie into a hyper-romantic masterpiece with Netflix-style UI",
+    "main":  "main.js",
+    "scripts":  {
+                    "start":  "electron .",
+                    "build":  "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+                    "build:win":  "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
+                    "build:mac":  "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
+                    "build:all":  "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --mac"
+                },
+    "author":  "LoveFlix Team",
+    "license":  "MIT",
+    "devDependencies":  {
+                            "cross-env":  "^10.1.0",
+                            "electron":  "^28.0.0",
+                            "electron-builder":  "^24.9.1"
+                        },
+    "dependencies":  {
+                         "axios":  "^1.6.2",
+                         "electron-store":  "^8.1.0",
+                         "electron-updater":  "^6.7.3",
+                         "openai":  "^4.20.1"
+                     },
+    "build":  {
+                  "appId":  "com.loveflix.app",
+                  "productName":  "LoveFlix",
+                  "directories":  {
+                                      "output":  "dist"
+                                  },
+                  "files":  [
+                                "**/*",
+                                "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+                                "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+                                "!**/node_modules/*.d.ts",
+                                "!**/node_modules/.bin"
+                            ],
+                  "publish":  {
+                                  "provider":  "github",
+                                  "owner":  "janvanwassenhove",
+                                  "repo":  "LoveFlix"
+                              },
+                  "win":  {
+                              "target":  [
+                                             {
+                                                 "target":  "nsis",
+                                                 "arch":  [
+                                                              "x64"
+                                                          ]
+                                             }
+                                         ],
+                              "icon":  "assets/icon.ico",
+                              "publisherName":  "LoveFlix Team",
+                              "sign":  null,
+                              "signingHashAlgorithms":  [
+
+                                                        ],
+                              "verifyUpdateCodeSignature":  false,
+                              "forceCodeSigning":  false
+                          },
+                  "mac":  {
+                              "target":  [
+                                             {
+                                                 "target":  "dmg",
+                                                 "arch":  [
+                                                              "x64",
+                                                              "arm64"
+                                                          ]
+                                             }
+                                         ],
+                              "icon":  "assets/icon.icns",
+                              "category":  "public.app-category.entertainment",
+                              "hardenedRuntime":  false,
+                              "gatekeeperAssess":  false,
+                              "identity":  null
+                          },
+                  "nsis":  {
+                               "oneClick":  false,
+                               "allowToChangeInstallationDirectory":  true,
+                               "allowElevation":  true,
+                               "installerIcon":  "assets/icon.ico",
+                               "uninstallerIcon":  "assets/icon.ico",
+                               "createDesktopShortcut":  true,
+                               "createStartMenuShortcut":  true,
+                               "shortcutName":  "LoveFlix"
+                           },
+                  "dmg":  {
+                              "contents":  [
+                                               {
+                                                   "x":  130,
+                                                   "y":  220
+                                               },
+                                               {
+                                                   "x":  410,
+                                                   "y":  220,
+                                                   "type":  "link",
+                                                   "path":  "/Applications"
+                                               }
+                                           ]
+                          }
+              }
 }
