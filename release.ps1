@@ -176,6 +176,9 @@ try {
     # Build the application
     Write-Host "Building Electron application for current platform (this may take a while)..." -ForegroundColor Yellow
     
+    # Disable code signing completely to avoid winCodeSign download issues on Windows
+    $env:CSC_IDENTITY_AUTO_DISCOVERY = "false"
+    
     if ($isWindows) {
         Write-Host "  - Windows installer (NSIS)" -ForegroundColor Cyan
         npm run build:win
