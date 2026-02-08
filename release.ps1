@@ -142,6 +142,15 @@ try {
     # Clean previous builds
     Write-Host "Cleaning previous builds..." -ForegroundColor Yellow
     if (Test-Path "dist") { Remove-Item "dist" -Recurse -Force }
+    
+    # Clear electron-builder cache on Windows to avoid symlink issues
+    if ($isWindows) {
+        $cacheDir = Join-Path $env:LOCALAPPDATA "electron-builder\Cache\winCodeSign"
+        if (Test-Path $cacheDir) {
+            Write-Host "Clearing electron-builder cache to avoid symlink issues..." -ForegroundColor Yellow
+            Remove-Item $cacheDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 
     # Install/update dependencies
     Write-Host "Installing dependencies..." -ForegroundColor Yellow

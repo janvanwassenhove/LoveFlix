@@ -50,7 +50,9 @@
         }
       ],
       "icon": "assets/icon.ico",
-      "publisherName": "LoveFlix Team"
+      "publisherName": "LoveFlix Team",
+      "sign": null,
+      "verifyUpdateCodeSignature": false
     },
     "mac": {
       "target": [
@@ -62,10 +64,9 @@
           ]
         }
       ],
-      "icon": "assets/icon.icns",
-      "category": "public.app-category.entertainment",
-      "hardenedRuntime": true,
+      "icon": "assets/icofalse,
       "gatekeeperAssess": false,
+      "identity": null
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist"
     },
