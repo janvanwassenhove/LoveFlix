@@ -53,7 +53,9 @@
       "icon": "assets/icon.ico",
       "publisherName": "LoveFlix Team",
       "sign": null,
-      "verifyUpdateCodeSignature": false
+      "signingHashAlgorithms": [],
+      "verifyUpdateCodeSignature": false,
+      "forceCodeSigning": false
     },
     "mac": {
       "target": [
