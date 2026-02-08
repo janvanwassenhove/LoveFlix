@@ -5,14 +5,15 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder",
-    "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac",
-    "build:all": "electron-builder --win --mac"
+    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+    "build:win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win",
+    "build:mac": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
+    "build:all": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win --mac"
   },
   "author": "LoveFlix Team",
   "license": "MIT",
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1"
   },
