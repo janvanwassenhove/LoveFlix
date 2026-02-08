@@ -50,6 +50,11 @@ Write-Host "         LoveFlix Release Builder" -ForegroundColor Cyan
 Write-Host "=================================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Detect platform
+$isWindows = $PSVersionTable.Platform -eq 'Win32NT' -or $PSVersionTable.PSVersion.Major -le 5 -or [System.Environment]::OSVersion.Platform -eq 'Win32NT'
+$isMacOS = $PSVersionTable.Platform -eq 'Unix' -and $IsMacOS
+$Platform = if ($isWindows) { "Windows" } elseif ($isMacOS) { "macOS" } else { "Linux/Other" }
+
 # Check if we're in a git repository
 try {
     git rev-parse --git-dir 2>&1 | Out-Null
